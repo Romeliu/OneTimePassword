@@ -1,4 +1,7 @@
 using API.Data;
+using API.Data.Interfaces;
+using API.Services;
+using API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +15,11 @@ builder.Services.AddDbContext<DataContext>(options =>
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddScoped<ITokenService, TokenService>();
+
+builder.Services.AddScoped<ITemporaryPasswordService, TemporaryPasswordService>();
+builder.Services.AddScoped<ITemporaryPasswordRepository, TemporaryPasswordRepository>();
 
 var app = builder.Build();
 

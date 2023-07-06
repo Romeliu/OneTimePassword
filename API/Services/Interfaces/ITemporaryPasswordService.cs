@@ -4,7 +4,7 @@ namespace API.Services.Interfaces
 {
     public interface ITemporaryPasswordService
     {
-        public void CreateAsync(TemporaryPassword temporaryPassword);
+        public Task CreateAsync(string userId, string token, DateTime createdAt);
         public Task<Guid?> DeleteAsync(string password);
     }
 }

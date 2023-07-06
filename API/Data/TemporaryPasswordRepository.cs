@@ -19,22 +19,24 @@ namespace API.Data
             var records = await _context.TemporaryPasswords.ToListAsync();
             foreach (var record in records)
             {
-                if (record.CreatedAt < DateTime.Now.AddSeconds(-30))
+                if (record.CreatedAt.AddSeconds(30).CompareTo(DateTime.Now) < 0)
                     _context.TemporaryPasswords.Remove(record);
             }
             await _context.SaveChangesAsync();
         }
 
-        public async void CreateAsync(TemporaryPassword password)
+        public async Task CreateAsync(TemporaryPassword password)
         {
-            _context.Add(password);
+            _context.TemporaryPasswords.Add(password);
             await _context.SaveChangesAsync();
         }
 
-        public async void DeleteAsync(TemporaryPassword temporaryPassword)
+        public async Task<Guid?> DeleteAsync(TemporaryPassword temporaryPassword)
         {
+            Guid Id = temporaryPassword.Id;
             _context.TemporaryPasswords.Remove(temporaryPassword);
             await _context.SaveChangesAsync();
+            return Id;
         }
 
         public async Task<List<TemporaryPassword>> GetAllAsync()

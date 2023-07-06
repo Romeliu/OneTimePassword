@@ -14,9 +14,16 @@ namespace API.Services
             _repository = repository;
         }
 
-        public void CreateAsync(TemporaryPassword temporaryPassword)
+        public async Task CreateAsync(string userId, string token, DateTime createdAt)
         {
-            _repository.CreateAsync(temporaryPassword);
+            using var hmac = new HMACSHA512();
+
+            var temporaryPassword = new TemporaryPassword { CreatedAt = createdAt };
+
+            temporaryPassword.EncodedPasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(token));
+            temporaryPassword.EncodedPasswordSalt = hmac.Key;
+
+            await _repository.CreateAsync(temporaryPassword);
         }
 
         public async Task<Guid?> DeleteAsync(string token)
@@ -26,21 +33,26 @@ namespace API.Services
 
             foreach (var password in passwordList)
             {
-                if (ComparerHash(token, password))
+                if (CompareHash(token, password))
+                {
                     matchedPassword = password;
+                    break;
+                }
             }
 
             if (matchedPassword != null)
             {
-                _repository.DeleteAsync(matchedPassword);
-                if (matchedPassword.CreatedAt < DateTime.Now.AddSeconds(-30))
+                if (matchedPassword.CreatedAt.AddSeconds(30).CompareTo(DateTime.Now) < 0)
+                {
+                    await _repository.DeleteAsync(matchedPassword);
                     return null;
-                return matchedPassword.Id;
+                }
+                return await _repository.DeleteAsync(matchedPassword);
             }
             return null;
         }
 
-        private bool ComparerHash(string token, TemporaryPassword password)
+        private bool CompareHash(string token, TemporaryPassword password)
         {
             using var hmac = new HMACSHA512(password.EncodedPasswordSalt);
 
