@@ -22,7 +22,8 @@ namespace API.Controllers
         [HttpPost("temporaryPassword")]
         public async Task<ActionResult> CreateTemporaryPassword([FromBody] DateTime createdAt, string userId)
         {
-            if(createdAt.AddSeconds(30).CompareTo(DateTime.UtcNow) < 0)
+            var a = DateTime.Now;
+            if(createdAt.AddSeconds(30).CompareTo(DateTime.Now) < 0)
                 return BadRequest("The token cannot be created for a past date");
 
             if(userId == null)
@@ -40,6 +41,7 @@ namespace API.Controllers
         {
             if(password == null)
                 return BadRequest("Password cannot be null");
+
             var result = await _temporaryPasswordService.DeleteAsync(password);
 
             if (result != null)
